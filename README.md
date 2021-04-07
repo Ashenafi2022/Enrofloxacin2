@@ -27,21 +27,21 @@ QKC = 0.10 ;   Fraction of blood flow to the kidneys (Lin et al., 2020; Table 24
 QFC = 0.08 ;   Fraction of blood flow to the fat (Lin et al., 2016 SS Table 2, search for calves)
 QMC = 0.18 ;   Fraction of blood flow to the muscle (Lin et al., 2016 SS Table 2, search for calves)
 QLuC = 0.46 ;  Fraction of blood flow to the lungs (Lin et al., 2020; Table 24);
-QIC = 0.11 ;   Fraction of blood flow to the GI tract (Lin et al., 2020; Table 24, search for intestines alone)
+QItC = 0.11 ;   Fraction of blood flow to intestine (Lin et al., 2020; Table 24, search for intestines alone)
 QRC = 0.23 ;   Fraction of blood flow to the rest of the body (1-QLC-QKC-QFC-QMC-QIC), no QLuC?
 
 ; Tissue volumes
 BW = 118 ; Body weight (kg) (median of 35 calves in FQ AMR cattle study, ISU)
 VAC = 0.0104 ;    Fractional arterial blood (Lin et al., 2016 SS Table 2), plasma?
 VVC = 0.0296 ;    Fractional venous blood (Lin et al., 2016 SS Table 2)
-VbloodC = 0.0691 ; Fractional Blood volume, Is VbloodC different from VAC/VVC? IS it plasma? (Lin et al., 2020; Table 7)?
-VLC = 0.0287 ;     Fractional liver tissue (Lin et al., 2020; Table 7)
-VKC = 0.0039 ;     Fractional kidney tissue (Lin et al., 2020; Table 7)
-VFC = 0.0695 ;     Fractional fat tissue (Lin et al., 2020; Table 7)
-VMC = 0.339 ;      Fractional muscle tissue (Lin et al., 2020; Table 7)
-VLuC = 0.0123 ;    Fractional lung tissue in calves (Lin et al., 2020; Table 7)
-VIC = 0.0239 ;     Fractional intestine volumes in calves (Lin et al., 2020; Table 7; the whole intestine or LI alone?)
-VRC = 0.4536 ;     Fractional rest of body (1-VLC-VKC-VFC-VMC-VLuC-VIC-VbloodC), absent in Lecture10.5? 
+VbloodC = 0.04 ;  Fractional Blood volume, VbloodC=VAC+VVC? (0.0691 in Lin et al., 2020; Table 7 )?
+VLC = 0.0287 ;    Fractional liver tissue (Lin et al., 2020; Table 7)
+VKC = 0.0039 ;    Fractional kidney tissue (Lin et al., 2020; Table 7)
+VFC = 0.0695 ;    Fractional fat tissue (Lin et al., 2020; Table 7)
+VMC = 0.339 ;     Fractional muscle tissue (Lin et al., 2020; Table 7)
+VLuC = 0.0123 ;   Fractional lung tissue in calves (Lin et al., 2020; Table 7)
+VItC = 0.0239 ;   Fractional intestine volumes in calves (Lin et al., 2020; Table 7; the whole intestine or LI alone?)
+VRC = 0.4536 ;    Fractional rest of body (1-VLC-VKC-VFC-VMC-VLuC-VIC-VbloodC), absent in Lecture10.5? 
 
 ; Mass Transfer parameters (Chemical-specific parameters)
 ; Chemical molecular weight, PubChem
@@ -109,7 +109,7 @@ KfecesC1 = 0.01 ; CIP L/h/kg It was not considered for CIP Lin et al 2016 but fo
 
 ; Parameters for exposure scenario
 PDOSEsc = 7.5;12.5   mg/kg Low dose and high dose
-PDOSEEiv = 0 ;       mg/kg
+PDOSEiv = 0 ;       mg/kg
 PDOSEim = 0 ;        mg/kg
 PDOSEoral = 0 ;      mg/kg
 
@@ -143,9 +143,39 @@ DOSEiv=PDOSEiv*BW*MWmol; umol
 DOSEim=PDOSEim*BW*MWmol; umol
 DOSEsc=PDOSEsc*BW*MWmol; umol
 
+; Multiple oral dosing using the PULSE/EXPOSURE function, not required for my project
+tlen= 0.001 ; Length of exposure, oral, iv, im, or sc(h/day)
+tinterval= 24 ; Varied dependent on the exposure paradigm (h)
+Dstart= 0.0 ; Initiation day of exposure (day)
+Dstop= 1.0 ; Termination day of exposure (day)
+MAXT = 1.0 ; maximum comm. interval
+CINTC = 0.1 ; Communication interval
+CINT = CINTC ; Communication interval
+
+Tsim=TSTOP*24 ; Tstopin hours
+DS=Dstart*24 ; Initiation time point of exposure (h)
+Doff=(Dstop-Dstart)*24 ; Exposure duration (h)
+TimeOn=Dstart*24 ; Initiation time point of exposure (h)
+TimeOff=Dstop*24+tlen ; Termination time point of exposure (h)
+
+Exposure=PULSE(0,tinterval,tlen)*PULSE(DS,Tsim,Doff)
+RDOSEoral=(DOSEoral/tlen)*Exposure
+RAST=RDOSEoral-Kst*AST
+d/dt(AST)=RAST
+init AST = 0
+RAI=Kst*AST-Ka*AI-Kfeces*AI
+Rfeces=Kfeces*AI
+d/dt(Afeces)=Rfeces
+init Afeces= 0
+d/dt(AI)=RAI
+init AI = 0
+RAO = Ka*AI
+d/dt(AAO)=RAO
+init AAO = 0
+
 ;Single IV dosing to the venous
 IVR=DOSEiv/timeiv
-RIV=IVR(1.0-step(1,timeiv)
+RIV=IVR*(1.0-step(1,timeiv))
 d/dt(AIV)=RIV
 init AIV=0
 
@@ -165,7 +195,7 @@ Rscsite=-Ksc*Ascsite
 Ascsite=Dosesc
 
 ; Metabolic rate
-Km=KmC*BW ; h-1
+Km=KmC*BW ; h-1, first order
 
 ; Urinary elimination rate constant
 Kurine = KurineC*BW ; ENR
@@ -181,7 +211,7 @@ Kfeces1 = Kfeces1C*BW ; CIP
 
 ; ...........ENR submodel............................
 ; CV = venous blood/plasma concentration
-RV=QL*CVL+QK*CVK+QM*CVM+QF*CVF+QI*CVI+QR*CVR+Riv+Rim+Rsc-QC*CV
+RV=QL*CVL+QK*CVK+QM*CVM+QF*CVF+QIt*CVIt+QR*CVR+Riv+Rim+Rsc-QC*CV
 d/dt(AV)=RV
 init AV = 0
 
@@ -215,7 +245,7 @@ CL = AL/VL ; concetration in the liver (AL - amount in liver, VL - Volume of liv
 CVL = CL/PL
 CLmg = CL*MWmg ; concentration in liver venous blood
 
-; Metabolism of ENR in liver compartment
+; Metabolism of ENR in liver compartment, first order metabolism rate because it does not saturate.
 Rmet=Km*CL*VL
 Rmet1=Rmet*Frac
 Rmet2=Rmet*(1-Frac)
@@ -227,17 +257,17 @@ d/dt(Amet2)=Rmet2
 init Amet2 = 0
 
 ; ENR in kidney compartment
-RK=QK*(CAfree-CVK)-Rurine ; Rate of ENR change in kideny
-d/dt(AK)=RK
+RK = QK*(CAfree-CVK)-Rurine ; Rate of ENR change in kideny
+d/dt(AK) = RK
 init AK = 0
-CK=AK/VK
-CVK=CK/PK ; Concentration in kideny
-Ckmg=Ck*MWmg ; Concentration in kideny venous blood
+CK = AK/VK
+CVK = CK/PK ; Concentration in kideny
+Ckmg = Ck*MWmg ; Concentration in kideny venous blood
 
 ; Urinary excretion of parent compound
-Rurine=Kurine*CVK
-d/dt(Aurine)=Rurine
-init Aurine= 0
+Rurine = Kurine*CVK
+d/dt(Aurine) = Rurine
+init Aurine = 0
 
 ; ENRO in muscle compartment
 RM = QM*(CAfree-CVM) ; Rate of ENR change in muscle
@@ -255,12 +285,12 @@ CF = AF/VF
 CVF = CF/PF ; Concentration of ENR in venous blood of fat
 
 ; ENRO in intestine compartment
-RI = QF*(CAfree-CVI)
-d/dt(AI) = RI
-init AI = 0
-CI = AI/VI ; ENR concentration in intestine
-CVI = CI/PI ; Concentration in intestinal venous blood
-CImg = CI*MWmg
+RIt = QIt*(CAfree-CVIt)
+d/dt(AIt) = RIt
+init AIt = 0
+CIt = AIt/VIt ; ENR concentration in intestine
+CVIt = CIt/PIt ; Concentration in intestinal venous blood
+CItmg = CIt*MWmg
 
 ; ENRO in rest of the body
 RR = QR*(CAfree-CVR)
@@ -270,14 +300,15 @@ CR = AR/VR
 CVR = CR/PR ; Concentration in venous blood of the rest of body
 
 ; Mass balance
-Qbal=QC-QL-QK-QM-QF-QI-QR
-Tmass=Ablood+AL+AK+AM+AF+AI+AR+Aurine+Amet
+Qbal=QC-QL-QK-QM-QF-QIt-QR
+Tmass=Ablood+AL+AK+AM+AF+AIt+AR+Aurine+Amet
 Bal=AAO+AIV+AIM+ASC-Tmass
 
-;.......Submodel for the marker resisue (CIP)..........
+
+;.......Submodel for the marker residue (CIP)..........
 
 ;CV1 = venous blood/plasma concentration of CIP
-RV1=QL*CVL1+QK*CVK1+QM*CVM1+QF*CVF1+QI*CVI1+QR*CVR1-QC*CV1
+RV1=QL*CVL1+QK*CVK1+QM*CVM1+QF*CVF1+QIt*CVIt1+QR*CVR1-QC*CV1
 d/dt(AV1)=RV1
 init AV1 = 0
 CV1=AV1/Vven
@@ -304,52 +335,52 @@ CLu1 = ALu1/VLu
 CVLu1=CLu1/PLu1
 
 ; CIP in liver compartment
-RL1 = QL*(CA1free-CVL1)+Rmet1 ; Rate CIP change in venous blood
+RL1 = QL*(CA1free-CVL1)+Rmet1 ; Rate of CIP change in venous blood
 d/dt(AL1) = RL1
 init AL1 = 0
 CL1 = AL1/VL ; CIP Concentration in liver
-CVL1 = CL1/PL1 ; CIP concentration in liver
-CL1mg=CL1*MW1mg
-CLtotalmg=CL1mg+CLmg ; concentration of combined ENR and CIP
+CVL1 = CL1/PL1 ; CIP concentration in liver venous
+CL1mg = CL1*MW1mg
+CLtotalmg = CL1mg+CLmg ; concentration of combined ENR and CIP
 
 ; CIPRO in kidney compartment
 RK1 = QK*(CA1free-CVK1)-Rurine1 ; Rate of CIP change in kideny
 d/dt(AK1) = RK1
 init AK1 = 0
 CK1 = AK1/VK ; Concentration in kidney
-CK1mg=CK1*MW1mg
-CVK1 = CK1/PK1 ; Concentration in kidney venous blood
-CKtotalmg=CK1mg+CKmg ; concentration of ENR and CIP in kidney
+CVK1 = CK1/PK1; Concentration in kidney venous blood
+CK1mg = CK1*MW1mg
+CKtotalmg = CK1mg+CKmg ; concentration of ENR and CIP in kidney
 
 ; Urinary excretion of the marker residue
-Rurine1=Kurine1*CVK1
-d/dt(Aurine1)=Rurine1
+Rurine1 = Kurine1*CVK1
+d/dt(Aurine1) = Rurine1
 init Aurine1 = 0
 
-; Marker residue in muscle compartment
-RM1=QM*(CA1free-CVM1)
-d/dt(AM1)=RM1
+; CIP in muscle compartment
+RM1 = QM*(CA1free-CVM1)
+d/dt(AM1) = RM1
 init AM1 = 0
-CM1=AM1/VM
-CVM1=CM1/PM1
-CM1mg=CM1*MW1mg
-CMtotalmg=CM1mg+CMmg ; Concentration of combined the parent drug and major metabolite
+CM1 = AM1/VM
+CVM1 = CM1/PM1
+CM1mg = CM1*MW1mg
+CMtotalmg = CM1mg+CMmg ; Concentration of combined the parent drug and major metabolite
 
 ; Marker residue in fat compartment
 RF1=QF*(CA1free-CVF1)
-d/dt(AF1)=RF1
+d/dt(AF1) = RF1
 init AF1 = 0
-CF1=AF1/VF
-CVF1=CF1/PF1
+CF1 = AF1/VF
+CVF1 = CF1/PF1
 
 ; CIPRO in intestine compartment
-RI1 = QF*(CA1free-CVI1)+Rmet1
-d/dt(AI1) = RI1
-init AI1 = 0
-CI1 = AI1/VI ; CIP Concentration in intestinal
-CVI1 = CI1/PI1 ; CIP Concentration in intestinal venous blood
-CI1mg=CI1*MW1mg
-CItotalmg=CI1mg+CImg ; concentrations of ENR and CIP in intestine
+RIt1 = QIt*(CA1free-CVIt1)+Rmet1
+d/dt(AIt1) = RIt1
+init AIt1 = 0
+CIt1 = AIt1/VIt ; CIP Concentration in intestinal
+CVIt1 = CIt1/PIt1 ; CIP Concentration in intestinal venous blood
+CIt1mg=CIt1*MW1mg
+CIttotalmg=CIt1mg+CItmg ; concentrations of ENR and CIP in intestine
 
 ; CIPRO in rest of body compartment
 RR1 = QR*(CA1free-CVR1) ; Rate of CIP change in rest of body
@@ -359,10 +390,10 @@ CR1 = AR1/VR ; CIP concentration rest of the body
 CVR1 = CR1/PR1 ; CIP Concentration in venous blood of the rest of body
 
 ;Mass balance
-Tmass1=ABlood+AL1+AK1+AM1+AF1+AI1+AR1+ALu1+Aurine1
+Tmass1=ABlood+AL1+AK1+AM1+AF1+AIt1+AR1+ALu1+Aurine1
 Bal1=Amet1-Tmass1
 
-
+TSTOP = 1080; h
 
 
 
