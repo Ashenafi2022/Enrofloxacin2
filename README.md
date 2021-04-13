@@ -1,6 +1,6 @@
 # Enrofloxacin2
 ## Barekely Madona codes for seven caompartments BPPK model for enrofloxacin in calves
-### 7 compartments: liver, kidney, lungs, muscle, fat, intestine and the rest of the body
+### 9 compartments: liver, kidney, lungs, muscle, fat, intestine, arterial blood, venous blood and the rest of the body
 
 {A PBPK model for enrofloxacin and its metabolite ciprofloxacin in cattle:
 Model written by ASHENAFI BEYI, on March 2021, 
@@ -20,28 +20,28 @@ DTOUT = 0.1
 QCC = 9.09 ; cardiac output (L/h/kg) (Lin et al., 2020; Table 16)
 
 ;Fraction of blood flow to organs (unitless, percent)
-QLC = 0.30 ;  Fraction of blood flow to the liver (Lin et al., 2020; Table 24; Hepatic artery = 0.04 and Portal vein = 0.28)
-;QLhC = 0.04 ;  Fraction of blood flow to the liver hepatic artery (Lin et al., 2020; Table 24)?
-;QLpC = 0.28 ;  Fraction of blood flow to the liver portal vein (from intestine, Lin et al., 2020; Table 24)?
-QKC = 0.10 ;   Fraction of blood flow to the kidneys (Lin et al., 2020; Table 24)
-QFC = 0.08 ;   Fraction of blood flow to the fat (Lin et al., 2016 SS Table 2, search for calves)
-QMC = 0.18 ;   Fraction of blood flow to the muscle (Lin et al., 2016 SS Table 2, search for calves)
-QLuC = 0.46 ;  Fraction of blood flow to the lungs (Lin et al., 2020; Table 24);
-QItC = 0.11 ;   Fraction of blood flow to intestine (Lin et al., 2020; Table 24, search for intestines alone)
-QRC = 0.23 ;   Fraction of blood flow to the rest of the body (1-QLC-QKC-QFC-QMC-QIC), no QLuC?
+QLC = 0.30 ;    Fraction of blood flow to the liver (Lin et al., 2020; Table 24; Hepatic artery = 0.04 and Portal vein = 0.28)
+   ; QLhC = 0.04 ;  Fraction of blood flow to the liver hepatic artery (Lin et al., 2020; Table 24)?
+   ; QLpC = 0.28 ;  Fraction of blood flow to the liver portal vein (from intestine, Lin et al., 2020; Table 24)?
+QKC = 0.10 ;    Fraction of blood flow to the kidneys (Lin et al., 2020; Table 24)
+QFC = 0.08 ;    Fraction of blood flow to the fat (Lin et al., 2016 SS Table 2, search for calves)
+QMC = 0.18 ;    Fraction of blood flow to the muscle (Lin et al., 2016 SS Table 2, search for calves)
+QLuC = 0.46 ;   Fraction of blood flow to the lungs (Lin et al., 2020; Table 24);
+QItC = 0.11 ;   Fraction of blood flow to intestine (Lin et al., 2020; in Table 24 for GIT, search for intestines alone)
+QRC = 1-QLC-QKC-QFC-QMC-QItC ;   Fraction of blood flow to the rest of the body (1-QLC-QKC-QFC-QMC-QItC), no QLuC?
 
 ; Tissue volumes
-BW = 118 ; Body weight (kg) (median of 35 calves in FQ AMR cattle study, ISU)
-VAC = 0.0104 ;    Fractional arterial blood (Lin et al., 2016 SS Table 2), plasma?
-VVC = 0.0296 ;    Fractional venous blood (Lin et al., 2016 SS Table 2)
-VbloodC = 0.04 ;  Fractional Blood volume, VbloodC=VAC+VVC? (0.0691 in Lin et al., 2020; Table 7 )?
+BW = 118 ;        Body weight (kg) (median of 35 calves in FQ AMR cattle study, ISU)
+VAC = 0.0180 ;    Fractional arterial blood (Computed from Lin et al., 2020 based on Lin et al., 2016*2), plasma=0.45*VVC
+VVC = 0.0511 ;    Fractional venous blood (Computed from Lin et al., 2020 based on Lin et al., 2016*)
+VbloodC = 0.0691; Fractional Blood volume, VbloodC=VAC+VVC (Lin et al., 2020; Table 7 )
 VLC = 0.0287 ;    Fractional liver tissue (Lin et al., 2020; Table 7)
 VKC = 0.0039 ;    Fractional kidney tissue (Lin et al., 2020; Table 7)
 VFC = 0.0695 ;    Fractional fat tissue (Lin et al., 2020; Table 7)
 VMC = 0.339 ;     Fractional muscle tissue (Lin et al., 2020; Table 7)
 VLuC = 0.0123 ;   Fractional lung tissue in calves (Lin et al., 2020; Table 7)
 VItC = 0.0239 ;   Fractional intestine volumes in calves (Lin et al., 2020; Table 7; the whole intestine or LI alone?)
-VRC = 0.4536 ;    Fractional rest of body (1-VLC-VKC-VFC-VMC-VLuC-VIC-VbloodC), absent in Lecture10.5? 
+VRC = 1-VLC-VKC-VFC-VMC-VLuC-VItC-VbloodC ; Fractional rest of body (1-VLC-VKC-VFC-VMC-VLuC-VIC-VbloodC = 0.5231), absent in Lecture10.5? 
 
 ; Mass Transfer parameters (Chemical-specific parameters)
 ; Chemical molecular weight, PubChem
@@ -394,6 +394,8 @@ Tmass1=ABlood+AL1+AK1+AM1+AF1+AIt1+AR1+ALu1+Aurine1
 Bal1=Amet1-Tmass1
 
 TSTOP = 1080; h
+
+
 
 
 
