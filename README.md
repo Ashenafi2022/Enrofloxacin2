@@ -1,6 +1,9 @@
+
+{
 # Enrofloxacin2
 ## Barekely Madona codes for seven caompartments BPPK model for enrofloxacin in calves
 ### 9 compartments: liver, kidney, lungs, muscle, fat, intestine, arterial blood, venous blood and the rest of the body
+}
 
 {A PBPK model for enrofloxacin and its metabolite ciprofloxacin in cattle:
 Model written by ASHENAFI BEYI, on March 2021, 
@@ -11,7 +14,7 @@ METHOD RK4
 
 STARTTIME = 0
 STOPTIME = 48 ; Data of plasma and fecal samples collected upto 48 hrs is available for model validation
-DT = 0.0005 ; 0.00001
+DT = 0.005 ; 0.00001
 DTOUT = 0.1
 
 ; Physiological parameters
@@ -31,7 +34,7 @@ QItC = 0.11 ;   Fraction of blood flow to intestine (Lin et al., 2020; in Table 
 QRC = 1-QLC-QKC-QFC-QMC-QItC ;   Fraction of blood flow to the rest of the body (1-QLC-QKC-QFC-QMC-QItC), no QLuC?
 
 ; Tissue volumes
-BW = 118 ;        Body weight (kg) (median of 35 calves in FQ AMR cattle study, ISU)
+BW = 118 ;        Body weight (kg) (median of 35 calves in FQ AMR cattle study, ISU); need to be scaled up to their age at ENR adminstration (3 weeks)
 VAC = 0.0180 ;    Fractional arterial blood (Computed from Lin et al., 2020 based on Lin et al., 2016*2), plasma=0.45*VVC
 VVC = 0.0511 ;    Fractional venous blood (Computed from Lin et al., 2020 based on Lin et al., 2016*)
 VbloodC = 0.0691; Fractional Blood volume, VbloodC=VAC+VVC (Lin et al., 2020; Table 7 )
@@ -45,7 +48,7 @@ VRC = 1-VLC-VKC-VFC-VMC-VLuC-VItC-VbloodC ; Fractional rest of body (1-VLC-VKC-V
 
 ; Mass Transfer parameters (Chemical-specific parameters)
 ; Chemical molecular weight, PubChem
-MW = 359.39 ; g/mol, enrofloxacin ; 1 mole parent compounn is metabolized to produce 1 mole of metabolite
+MW = 359.39 ; g/mol, enrofloxacin ; 1 mole parent compound is metabolized to produce 1 mole of metabolite
 MW1 = 331.34 ; g/mol, ciprofloxacin
 MWmol = 2.78 ; umol/mg, enrofloxacin
 MWmg = 0.36 ; mg/umol, enrofloxacin
@@ -109,19 +112,19 @@ KfecesC1 = 0.01 ; CIP L/h/kg It was not considered for CIP Lin et al 2016 but fo
 
 ; Parameters for exposure scenario
 PDOSEsc = 7.5;12.5   mg/kg Low dose and high dose
-PDOSEiv = 0 ;       mg/kg
+PDOSEiv = 0 ;        mg/kg
 PDOSEim = 0 ;        mg/kg
 PDOSEoral = 0 ;      mg/kg
 
 ; Cardiac output and blood flows to tissues (L/h)
 QC = QCC*BW ; Cardiac output
-QL = QLC*QC ; Liver
-QK = QKC*QC ; kidney
-QF = QFC*QC ; Fat
-QLu = QLuC*QC ; Lung
-QM = QMC*QC ; Muscle
+QL = QLC*QC ; blood flow to the Liver
+QK = QKC*QC ; blood flow to kidney
+QF = QFC*QC ; blood flow to Fat
+QLu = QLuC*QC ; blood flow to Lung
+QM = QMC*QC ; blood flow to Muscle
 QIt = QItC*QC ; Intestine
-QR = QRC*QC ; Rest of body
+QR = QC-QL-QK-QF-QM-QIt ; blood flow to the rest of the body
 
 ; Tissue Volume (L)
 VL = VLC*BW ; Liver
@@ -131,17 +134,17 @@ VM = VMC*BW ; Muscle
 VLu = VLuC*BW ; Lung
 VIt = VItC*BW ; Intestine
 VBlood=VBloodC*BW ; Blood
-VartC= 0.26*VBloodC; Fraction blood as arterial, Leavens et al. 2014
-VvenC= 0.74*VBloodC; Fraction blood as venous, Leavens et al. 2014
-Vven=VvenC*BW
-Vart=VartC*BW
-VR= BW-VL-VK-VM-VF-VLu-VBlood-VIt; Rest of body
+VartC = 0.26*VBloodC; Fraction blood as arterial, Leavens et al. 2014
+VvenC = 0.74*VBloodC; Fraction blood as venous, Leavens et al. 2014
+Vven = VvenC*BW
+Vart = VartC*BW
+VR = BW-VL-VK-VM-VF-VLu-VBlood-VIt; Rest of body
 
 ; Dosing amounts (mg converted to umol)
-DOSEoral=PDOSEoral*BW*MWmol; umol
-DOSEiv=PDOSEiv*BW*MWmol; umol
-DOSEim=PDOSEim*BW*MWmol; umol
-DOSEsc=PDOSEsc*BW*MWmol; umol
+DOSEoral = PDOSEoral*BW*MWmol; umol
+DOSEiv = PDOSEiv*BW*MWmol; umol
+DOSEim = PDOSEim*BW*MWmol; umol
+DOSEsc = PDOSEsc*BW*MWmol; umol
 
 ; Multiple oral dosing using the PULSE/EXPOSURE function, not required for my project
 tlen= 0.001 ; Length of exposure, oral, iv, im, or sc(h/day)
@@ -165,7 +168,7 @@ d/dt(AST)=RAST
 init AST = 0
 RAI=Kst*AST-Ka*AI-Kfeces*AI
 Rfeces=Kfeces*AI
-d/dt(Afeces)=Rfeces
+d/dt(Afeces) = Rfeces
 init Afeces= 0
 d/dt(AI)=RAI
 init AI = 0
@@ -174,28 +177,28 @@ d/dt(AAO)=RAO
 init AAO = 0
 
 ;Single IV dosing to the venous
-IVR=DOSEiv/timeiv
-RIV=IVR*(1.0-step(1,timeiv))
-d/dt(AIV)=RIV
-init AIV=0
+IVR = DOSEiv/timeiv
+RIV = IVR*(1.0-step(1,timeiv))
+d/dt(AIV) = RIV
+init AIV = 0
 
 ; Single IM exposure
-Rim=Kim*Aimsite
-d/dt(Aim)=Rim
-init Aim=0
-Rimsite=-Kim*Aimsite
-d/dt(Aimsite)=Rimsite
-init Aimsite=Doseim
+Rim = Kim*Aimsite
+d/dt(Aim) = Rim
+init Aim = 0
+Rimsite = -Kim*Aimsite
+d/dt(Aimsite) = Rimsite
+init Aimsite = Doseim
 
 ; Single Sc exposure
 Rsc = Ksc*Ascsite
 d/dt(Asc) = Rsc
 init Asc = 0
-Rscsite=-Ksc*Ascsite
-Ascsite=Dosesc
+Rscsite = -Ksc*Ascsite
+Ascsite = Dosesc
 
 ; Metabolic rate
-Km=KmC*BW ; h-1, first order
+Km = KmC*BW ; h-1, first order
 
 ; Urinary elimination rate constant
 Kurine = KurineC*BW ; ENR
@@ -211,49 +214,49 @@ Kfeces1 = Kfeces1C*BW ; CIP
 
 ; ...........ENR submodel............................
 ; CV = venous blood/plasma concentration
-RV=QL*CVL+QK*CVK+QM*CVM+QF*CVF+QIt*CVIt+QR*CVR+Riv+Rim+Rsc-QC*CV
-d/dt(AV)=RV
+RV = QL*CVL+QK*CVK+QM*CVM+QF*CVF+QIt*CVIt+QR*CVR+Riv+Rim+Rsc-QC*CV
+d/dt(AV) = RV
 init AV = 0
 
-CV=AV/Vven
-CVfree=CV*(1-PB)
-CVbound=CV*PB
-CVmg=CV*MWmg; Unit conversion from umol/L to mg/L (ug/g)
+CV = AV/Vven
+CVfree = CV*(1-PB)
+CVbound = CV*PB
+CVmg = CV*MWmg; Unit conversion from umol/L to mg/L (ug/g), what would the unit for calibration/validation data? mg/mL?
 
 ; CA = arterial blood/plasma concentration
-RA=QC*CVLu-QC*CAfree
-d/dt(AA)=RA
+RA = QC*CVLu-QC*CAfree
+d/dt(AA) = RA
 init AA = 0
-CA=AA/Vart
-CAfree=CA*(1-PB)
-CAbound=CA*PB
+CA = AA/Vart
+CAfree = CA*(1-PB)
+CAbound = CA*PB
 
-ABlood=AV+AA
+ABlood = AV+AA
 
 ; ENR in lung compartment
-RALu=QC*(CV-CVLu)
-d/dt(ALu)=RALu
+RALu = QC*(CV-CVLu)
+d/dt(ALu) = RALu
 init ALu= 0
-CLu=ALu/VLu
-CVLu=CLu/PLu
+CLu = ALu/VLu
+CVLu = CLu/PLu
 
 ; ENR in liver compartment
 RL = QL*(CAfree-CVL)+RAO-Rmet ; Rate of ENR change in liver
 d/dt(AL) = RL
 init AL = 0
-CL = AL/VL ; concetration in the liver (AL - amount in liver, VL - Volume of liver)
+CL = AL/VL ; concentration in the liver (AL - amount in liver, VL - Volume of liver)
 CVL = CL/PL
 CLmg = CL*MWmg ; concentration in liver venous blood
 
 ; Metabolism of ENR in liver compartment, first order metabolism rate because it does not saturate.
-Rmet=Km*CL*VL
-Rmet1=Rmet*Frac
-Rmet2=Rmet*(1-Frac)
-d/dt(Amet)=Rmet
+Rmet = Km*CL*VL
+Rmet1 = Rmet*Frac
+Rmet2 = Rmet*(1-Frac)
+d/dt(Amet) = Rmet
 init Amet= 0
-d/dt(Amet1)=Rmet1
+d/dt(Amet1) = Rmet1
 init Amet1 = 0
-d/dt(Amet2)=Rmet2
+d/dt(Amet2) = Rmet2
 init Amet2 = 0
 
 ; ENR in kidney compartment
@@ -300,22 +303,22 @@ CR = AR/VR
 CVR = CR/PR ; Concentration in venous blood of the rest of body
 
 ; Mass balance
-Qbal=QC-QL-QK-QM-QF-QIt-QR
-Tmass=Ablood+AL+AK+AM+AF+AIt+AR+Aurine+Amet
-Bal=AAO+AIV+AIM+ASC-Tmass
+Qbal = QC-QL-QK-QM-QF-QIt-QR
+Tmass = Ablood+AL+AK+AM+AF+AIt+AR+ALu+Aurine+Amet
+Bal = AAO+AIV+AIM+ASC-Tmass
 
 
 ;.......Submodel for the marker residue (CIP)..........
 
 ;CV1 = venous blood/plasma concentration of CIP
-RV1=QL*CVL1+QK*CVK1+QM*CVM1+QF*CVF1+QIt*CVIt1+QR*CVR1-QC*CV1
+RV1 = QL*CVL1+QK*CVK1+QM*CVM1+QF*CVF1+QIt*CVIt1+QR*CVR1-QC*CV1
 d/dt(AV1)=RV1
 init AV1 = 0
-CV1=AV1/Vven
-CV1free=CV1*(1-PB1)
-CV1bound=CV1*PB1
-CV1mg=CV1*MW1mg ; Unit conversion from umol/L to mg/L (ug/g)
-CVtotalmg=CVmg+CV1mg ; Concentration of combined the parent drug and major metabolite
+CV1 = AV1/Vven
+CV1free = CV1*(1-PB1)
+CV1bound = CV1*PB1
+CV1mg = CV1*MW1mg ; Unit conversion from umol/L to mg/L (ug/g)
+CVtotalmg = CVmg+CV1mg ; Concentration of combined the parent drug and major metabolite
 
 ; CA1 = arterial blood/plasma concentration of the marker residue
 RA1 = QC*CVLu1-QC*CA1free
@@ -325,14 +328,14 @@ CA1 = AA1/Vart
 CA1free = CA1*(1-PB1)
 CA1bound = CA1*PB1
 
-ABlood1=AV1+AA1
+ABlood1 = AV1+AA1
 
 ; Marker residue in lung compartment
 RALu1 = QC*(CV1-CVLu1)
-d/dt(ALu1)=RALu1
+d/dt(ALu1) = RALu1
 init Alu1 = 0
 CLu1 = ALu1/VLu
-CVLu1=CLu1/PLu1
+CVLu1 = CLu1/PLu1
 
 ; CIP in liver compartment
 RL1 = QL*(CA1free-CVL1)+Rmet1 ; Rate of CIP change in venous blood
@@ -374,7 +377,7 @@ CF1 = AF1/VF
 CVF1 = CF1/PF1
 
 ; CIPRO in intestine compartment
-RIt1 = QIt*(CA1free-CVIt1)+Rmet1
+RIt1 = QIt*(CA1free-CVIt1)
 d/dt(AIt1) = RIt1
 init AIt1 = 0
 CIt1 = AIt1/VIt ; CIP Concentration in intestinal
@@ -390,13 +393,14 @@ CR1 = AR1/VR ; CIP concentration rest of the body
 CVR1 = CR1/PR1 ; CIP Concentration in venous blood of the rest of body
 
 ;Mass balance
-Tmass1=ABlood+AL1+AK1+AM1+AF1+AIt1+AR1+ALu1+Aurine1
+Tmass1=ABlood1+AL1+AK1+AM1+AF1+AIt1+AR1+ALu1+Aurine1
 Bal1=Amet1-Tmass1
 
 TSTOP = 1080; h
 
 
-
+; # RUNNING MASS BALANCE
+; Double click the Graph window, choose QC, QL, QK, QM, QF, Qrest, VL, and VK in the Y Axes window, click remove (one by one); choose Bal, Bal1, CVmg, CV1mg, CVtotalmg, CLtotalmg, CKtotalmg, and CMtotalmgin the Variables window, add to the Y Axes window (one by one); click Run, hide CVmg, CV1mg, CVtotalmg, CLtotalmg, CKtotalmg, and CMtotalmg, click Run, you should see the graph below
 
 
 ; For biliary excretion refer to Module 7.3 lecture
