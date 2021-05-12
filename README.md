@@ -1,12 +1,12 @@
 
 {
 # Enrofloxacin2
-## Barekely Madona codes for seven caompartments BPPK model for enrofloxacin in calves
+## Barekely Madona codes for seven compartments BPPK model for enrofloxacin in calves
 ### 9 compartments: liver, kidney, lungs, muscle, fat, intestine, arterial blood, venous blood and the rest of the body
 }
 
 {A PBPK model for enrofloxacin and its metabolite ciprofloxacin in cattle:
-Model written by ASHENAFI BEYI, on March 2021, 
+Model written by ASHENAFI BEYI, in March 2021, 
 adapted from initial model coded in acsIX by Lin et al. (2016) Scientific Reports 6:27907}
 
 
@@ -182,20 +182,28 @@ RIV = IVR*(1.0-step(1,timeiv))
 d/dt(AIV) = RIV
 init AIV = 0
 
-; Single IM exposure
-Rim = Kim*Aimsite
-d/dt(Aim) = Rim
-init Aim = 0
-Rimsite = -Kim*Aimsite
-d/dt(Aimsite) = Rimsite
-init Aimsite = Doseim
+; Dosing, repeated doses
+tinterval = 24 ; varied dependent on the exposure paradigm (h)
+Tdoses = 1     ; times for mutiple oral gavage
+dosingperiod = if time < Tdoses*tinterval-DT then 1 else 0
 
-; Single Sc exposure
-Rsc = Ksc*Ascsite
-d/dt(Asc) = Rsc
-init Asc = 0
-Rscsite = -Ksc*Ascsite
-Ascsite = Dosesc
+; Dosing, IM, Intramuscular
+Rinputim = pulse(DOSEim,0,tinterval)*dosingperiod
+Rpenim = Rinputim
+Rim = Kim*Amtsiteim
+d/dt(Absorbim) = Rim
+init Absorbim = 0
+d/dt(Amtsiteim) = Rpenim-Rim
+init Amtsiteim = 0
+
+;Dosing, SC, subcutaneous
+Rinputsc = pulse(DOSEsc,0,tinterval)*dosingperiod
+Rpensc = Rinputsc
+Rsc = Ksc*Amtsitesc
+d/dt(Absorbsc) = Rsc
+init Absorbsc = 0
+d/dt(Amtsitesc) = Rpensc
+Amtsitesc = 0
 
 ; Metabolic rate
 Km = KmC*BW ; h-1, first order
@@ -305,7 +313,7 @@ CVR = CR/PR ; Concentration in venous blood of the rest of body
 ; Mass balance
 Qbal = QC-QL-QK-QM-QF-QIt-QR
 Tmass = Ablood+AL+AK+AM+AF+AIt+AR+ALu+Aurine+Amet
-Bal = AAO+AIV+AIM+ASC-Tmass
+Bal = AAO+AIV+Absorbim+Absorbsc-Tmass
 
 
 ;.......Submodel for the marker residue (CIP)..........
