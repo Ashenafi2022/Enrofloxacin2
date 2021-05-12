@@ -202,7 +202,7 @@ Rpensc = Rinputsc
 Rsc = Ksc*Amtsitesc
 d/dt(Absorbsc) = Rsc
 init Absorbsc = 0
-d/dt(Amtsitesc) = Rpensc
+d/dt(Amtsitesc) = Rpensc-Rsc
 Amtsitesc = 0
 
 ; Metabolic rate
