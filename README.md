@@ -203,7 +203,7 @@ Rsc = Ksc*Amtsitesc
 d/dt(Absorbsc) = Rsc
 init Absorbsc = 0
 d/dt(Amtsitesc) = Rpensc-Rsc
-Amtsitesc = 0
+init Amtsitesc = 0
 
 ; Metabolic rate
 Km = KmC*BW ; h-1, first order
