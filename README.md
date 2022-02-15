@@ -34,7 +34,7 @@ QItC = 0.11 ;   Fraction of blood flow to intestine (Lin et al., 2020; in Table 
 QRC = 1-QLC-QKC-QFC-QMC-QItC ;   Fraction of blood flow to the rest of the body (1-QLC-QKC-QFC-QMC-QItC), no QLuC?
 
 ; Tissue volumes
-BW = 118 ;        Body weight (kg) (median of 35 calves in FQ AMR cattle study, ISU); need to be scaled up to their age at ENR adminstration (3 weeks)
+BW = 118 ;        Body weight (kg) (median of 35 calves in FQ AMR cattle study, ISU); need to be scaled up to their age at ENR adminstration (3 weeks, adg =0.6 kg/day, Source:https://www.aphis.usda.gov/animal_health/nahms/dairy/downloads/dairy17/adg-preweaned-holstein-heifer.pdf)
 VAC = 0.0180 ;    Fractional arterial blood (Computed from Lin et al., 2020 based on Lin et al., 2016*2), plasma=0.45*VVC
 VVC = 0.0511 ;    Fractional venous blood (Computed from Lin et al., 2020 based on Lin et al., 2016*)
 VbloodC = 0.0691; Fractional Blood volume, VbloodC=VAC+VVC (Lin et al., 2020; Table 7 )
