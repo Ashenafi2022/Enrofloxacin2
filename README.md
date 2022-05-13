@@ -62,7 +62,7 @@ PK = 5.5 ;   Kidney:plasma PC (Lin et al., 2016 SS Table 4)
 PF = 0.53 ;  Fat:plasma PC (Lin et al., 2016 SS Table 4)
 PM = 1.09 ;  Muscle:plasma PC (Lin et al., 2016 SS Table 4)
 PLu = 4.3 ;  Lung:plasma PC (Lin et al., 2016 SS Table 4)
-PIt = 4.3 ;   Intestine:plasma, assumed to be similar to that of liver?
+PIt = 4.88 ; Intestine:plasma, Gut (Yang, Fan et al. “Development and Application of a Water Temperature Related Physiologically Based Pharmacokinetic Model for Enrofloxacin and Its Metabolite Ciprofloxacin in Rainbow Trout.” Frontiers in veterinary science vol. 7 608348. 25 Jan. 2021)
 PR = 1.5 ;   Rest of body:plasma (Lin et al., 2016 SS Table 4) Is PR affected by the number of compartments? e.g. whether GIT is included or not?
 
 ; main metabolite, ciprofloxacin
@@ -71,7 +71,7 @@ PK1 = 5.5 ;   Kidney:plasma PC (Lin et al., 2016 SS Table 4)
 PF1 = 0.53 ;  Fat:plasma PC (Lin et al., 2016 SS Table 4)
 PM1 = 1.09 ;  Muscle:plasma PC (Lin et al., 2016 SS Table 4)
 PLu1 = 4.3 ;  Lung:plasma PC (Lin et al., 2016 SS Table 4)
-PIt1 = 4.3 ;   Intestine:plasma , assumed to be similar to that of liver?
+PIt1 = 3.39 ; Intestine:plasma, Gut (Yang, Fan et al. “Development and Application of a Water Temperature Related Physiologically Based Pharmacokinetic Model for Enrofloxacin and Its Metabolite Ciprofloxacin in Rainbow Trout.” Frontiers in veterinary science vol. 7 608348. 25 Jan. 2021)
 PR1 = 1.5 ;   Rest of body:plasma  (Lin et al., 2016 SS Table 4)
 
 
@@ -247,6 +247,7 @@ d/dt(ALu) = RALu
 init ALu= 0
 CLu = ALu/VLu
 CVLu = CLu/PLu
+CLumg = CLu*MWmg ; concentration in lung venous blood
 
 ; ENR in liver compartment
 RL = QL*(CAfree-CVL)+RAO-Rmet ; Rate of ENR change in liver
@@ -344,6 +345,8 @@ d/dt(ALu1) = RALu1
 init Alu1 = 0
 CLu1 = ALu1/VLu
 CVLu1 = CLu1/PLu1
+CLumg1 = CLu1*MWmg ; concentration in lung venous blood
+CLutotalmg = CLumg+CLumg1
 
 ; CIP in liver compartment
 RL1 = QL*(CA1free-CVL1)+Rmet1 ; Rate of CIP change in venous blood
